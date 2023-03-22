@@ -1,7 +1,9 @@
-import { useState, FormEvent } from 'react'
+import { useState, FormEvent, useContext } from 'react'
 
-import { Eye, EyeClosed } from '@phosphor-icons/react'
+import { ClockClockwise, Eye, EyeClosed } from '@phosphor-icons/react'
 import { Link } from 'react-router-dom'
+
+import { AuthContext } from '../../contexts/auth'
 
 import logo from '../../assets/Logo_maior.png'
 
@@ -12,11 +14,13 @@ export default function SignUp() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const { signUp, loadingAuth } = useContext(AuthContext)
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     if (name !== '' && email !== '' && password !== '') {
-
+      await signUp(name, email, password)
     }
   }
 
@@ -72,9 +76,14 @@ export default function SignUp() {
           </div>
           <button
             type="submit"
-            className='w-full h-10 rounded p-3 text-lg text-light-bg bg-dark-blue flex items-center justify-center font-bold'
+            className={`w-full h-10 rounded p-3 text-lg text-light-bg bg-dark-blue flex items-center justify-center font-bold ${loadingAuth && 'opacity-80 cursor-not-allowed'}`}
           >
-            Cadastrar
+            {
+              loadingAuth ?
+                <ClockClockwise size={25} color='#fff' weight='thin' />
+                :
+                'Cadastrar'
+            }
           </button>
         </form>
 
