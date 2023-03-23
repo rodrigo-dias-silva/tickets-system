@@ -1,6 +1,6 @@
 import { useState, useContext, FormEvent } from 'react'
 
-import { Eye, EyeClosed } from '@phosphor-icons/react'
+import { ClockClockwise, Eye, EyeClosed } from '@phosphor-icons/react'
 import { Link } from 'react-router-dom'
 
 import { AuthContext } from '../../contexts/auth'
@@ -12,13 +12,13 @@ export default function SignIn() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  const { signIn } = useContext(AuthContext)
+  const { signIn, loadingAuth } = useContext(AuthContext)
 
-  function handleSignIn(event: FormEvent<HTMLFormElement>) {
+  async function handleSignIn(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     if (email !== '' && password !== '') {
-      signIn(email, password)
+      await signIn(email, password)
     }
   }
 
@@ -65,9 +65,14 @@ export default function SignIn() {
           </div>
           <button
             type="submit"
-            className='w-full h-10 rounded p-3 text-lg text-light-bg bg-dark-blue flex items-center justify-center font-bold'
+            className={`w-full h-10 rounded p-3 text-lg text-light-bg bg-dark-blue flex items-center justify-center font-bold ${loadingAuth && 'opacity-80 cursor-not-allowed'}`}
           >
-            Acessar
+            {
+              loadingAuth ?
+                <ClockClockwise size={25} color='#fff' weight='thin' />
+                :
+                'Acessar'
+            }
           </button>
         </form>
 
