@@ -1,8 +1,10 @@
 import React, { createContext, useState } from "react";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
+import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { useNavigate } from "react-router-dom";
+import { toast } from 'react-toastify'
 
 import { auth, db } from '../services/firebaseConnection'
-import { createUserWithEmailAndPassword } from 'firebase/auth'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
 
 interface AuthProviderProps {
   children: React.ReactNode;
@@ -35,7 +37,36 @@ function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<DataProps | null>(null)
   const [loadingAuth, setLoadingAuth] = useState(false)
 
-  function signIn(email: string, password: string) {
+  const navigate = useNavigate()
+
+  async function signIn(email: string, password: string) {
+    setLoadingAuth(true)
+
+    await signInWithEmailAndPassword(auth, email, password)
+      .then(async (value) => {
+        let uid = value.user.uid
+
+        const docRef = doc(db, 'users', uid)
+        const docSnap = await getDoc(docRef)
+
+        let data: DataProps = {
+          uid: uid,
+          name: docSnap.data()?.name || '',
+          email: value.user.email,
+          avatarUrl: docSnap.data()?.avatarUrl || ''
+        }
+
+        setUser(data)
+        storageUser(data)
+        setLoadingAuth(false)
+        toast.success('Bem-vindo(a) de volta!')
+        navigate('/dashboard')
+      })
+      .catch((error) => {
+        console.error(error);
+        setLoadingAuth(false)
+        toast.error('Ops... Algo deu errado!')
+      })
   }
 
   async function signUp(name: string, email: string, password: string) {
@@ -57,13 +88,20 @@ function AuthProvider({ children }: AuthProviderProps) {
               avatarUrl: null
             }
             setUser(data)
+            storageUser(data)
             setLoadingAuth(false)
+            toast.success('Seja bem-vindo ao sistema!')
+            navigate('/dashboard')
           })
       })
       .catch((error) => {
         console.error(error);
         setLoadingAuth(false)
       })
+  }
+
+  function storageUser(data: DataProps) {
+    localStorage.setItem('@ticketsUser', JSON.stringify(data))
   }
 
   return (
