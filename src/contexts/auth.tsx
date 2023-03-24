@@ -1,5 +1,5 @@
-import React, { createContext, useState } from "react";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
+import React, { createContext, useEffect, useState } from "react";
+import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify'
@@ -15,7 +15,9 @@ interface AuthContextProps {
   user: DataProps | null;
   signIn: (email: string, password: string) => void;
   signUp: (name: string, email: string, password: string) => void;
+  logOut: (auth: Auth) => void,
   loadingAuth: boolean;
+  loading: boolean;
 }
 
 interface DataProps {
@@ -30,14 +32,32 @@ export const AuthContext = createContext<AuthContextProps>({
   user: null,
   signIn: () => { },
   signUp: () => { },
-  loadingAuth: false
+  logOut: () => { },
+  loadingAuth: false,
+  loading: true
 })
 
 function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<DataProps | null>(null)
   const [loadingAuth, setLoadingAuth] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const navigate = useNavigate()
+
+  useEffect(() => {
+    async function loadUser() {
+      const storageUser = localStorage.getItem('@ticketsUser')
+
+      if (storageUser) {
+        setUser(JSON.parse(storageUser))
+        setLoading(false)
+      }
+
+      setLoading(false)
+    }
+
+    loadUser()
+  }, [])
 
   async function signIn(email: string, password: string) {
     setLoadingAuth(true)
@@ -104,6 +124,12 @@ function AuthProvider({ children }: AuthProviderProps) {
     localStorage.setItem('@ticketsUser', JSON.stringify(data))
   }
 
+  async function logOut(auth: Auth) {
+    await signOut(auth)
+    localStorage.removeItem('@ticketsUser')
+    setUser(null)
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -111,7 +137,9 @@ function AuthProvider({ children }: AuthProviderProps) {
         user,
         signIn,
         signUp,
-        loadingAuth
+        logOut,
+        loadingAuth,
+        loading
       }}
     >
       {children}
