@@ -8,7 +8,7 @@ import { AuthContext } from '../../contexts/auth'
 import logo from '../../assets/Logo_maior.png'
 
 export default function SignIn() {
-  const [typePssword, setTypePssword] = useState(true)
+  const [typePassword, setTypePassword] = useState(true)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
@@ -37,6 +37,7 @@ export default function SignIn() {
           <div className='w-full'>
             <input
               type="email"
+              autoComplete='email'
               placeholder='Digite seu e-mail'
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -45,7 +46,8 @@ export default function SignIn() {
           </div>
           <div className='relative w-full'>
             <input
-              type={typePssword ? 'password' : 'text'}
+              type={typePassword ? 'password' : 'text'}
+              autoComplete='current-password'
               placeholder='Digite sua senha'
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -53,10 +55,10 @@ export default function SignIn() {
             />
             <button
               type='button'
-              onClick={() => setTypePssword(!typePssword)}
+              onClick={() => setTypePassword(!typePassword)}
               className='absolute right-3 h-10'
             >
-              {typePssword ?
+              {typePassword ?
                 (<Eye size={24} />)
                 :
                 (<EyeClosed size={24} />)
