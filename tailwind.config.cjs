@@ -10,6 +10,9 @@ module.exports = {
         'dark-bg': '#121212',
         'light-bg': '#eaeaec',
         'dark-blue': '#181c2e'
+      },
+      backgroundImage: {
+        'profile': "url('/src/assets/cover.png')"
       }
     },
   },
