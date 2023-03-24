@@ -48,6 +48,7 @@ export default function SignUp() {
           <div className='w-full'>
             <input
               type="email"
+              autoComplete='email'
               placeholder='Digite seu e-mail'
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -57,6 +58,7 @@ export default function SignUp() {
           <div className='relative w-full'>
             <input
               type={typePssword ? 'password' : 'text'}
+              autoComplete='current-password'
               placeholder='Digite sua senha'
               value={password}
               onChange={(e) => setPassword(e.target.value)}
