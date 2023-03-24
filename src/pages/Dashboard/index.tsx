@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 import { AuthContext } from '../../contexts/auth'
 import { auth } from '../../services/firebaseConnection';
+import Header from '../../components/Header';
 
 type Props = {}
 
@@ -13,6 +14,7 @@ export default function Dashboard({ }: Props) {
 
   return (
     <div>
+      <Header />
       <h1>Pagina Dashboard</h1>
       <button onClick={handleLogout}>Sair da conta</button>
     </div>
