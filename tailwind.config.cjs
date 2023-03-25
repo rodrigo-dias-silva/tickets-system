@@ -9,6 +9,7 @@ module.exports = {
       colors: {
         'dark-bg': '#121212',
         'light-bg': '#eaeaec',
+        'light-color': '#f8f8f8',
         'dark-blue': '#181c2e'
       },
       backgroundImage: {
