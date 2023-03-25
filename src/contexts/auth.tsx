@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { Dispatch, SetStateAction, createContext, useEffect, useState } from "react";
 import { Auth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth'
 import { doc, getDoc, setDoc } from 'firebase/firestore'
 import { useNavigate } from "react-router-dom";
@@ -18,13 +18,8 @@ interface AuthContextProps {
   logOut: (auth: Auth) => void,
   loadingAuth: boolean;
   loading: boolean;
-}
-
-interface DataProps {
-  uid: string;
-  name: string;
-  email: string | null;
-  avatarUrl: string | null;
+  storageUser: (data: DataProps) => void;
+  setUser: Dispatch<SetStateAction<DataProps | null>>;
 }
 
 export const AuthContext = createContext<AuthContextProps>({
@@ -34,8 +29,17 @@ export const AuthContext = createContext<AuthContextProps>({
   signUp: () => { },
   logOut: () => { },
   loadingAuth: false,
-  loading: true
+  loading: true,
+  storageUser: () => { },
+  setUser: () => { },
 })
+
+interface DataProps {
+  uid: string;
+  name: string;
+  email: string | null;
+  avatarUrl: string | null;
+}
 
 function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<DataProps | null>(null)
@@ -139,7 +143,9 @@ function AuthProvider({ children }: AuthProviderProps) {
         signUp,
         logOut,
         loadingAuth,
-        loading
+        loading,
+        storageUser,
+        setUser
       }}
     >
       {children}
