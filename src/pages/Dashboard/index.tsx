@@ -15,8 +15,10 @@ export default function Dashboard({ }: Props) {
   return (
     <div>
       <Header />
-      <h1>Pagina Dashboard</h1>
-      <button onClick={handleLogout}>Sair da conta</button>
+      <div className='ml-52 px-4 py-1'>
+        <h1>Pagina Dashboard</h1>
+        <button onClick={handleLogout}>Sair da conta</button>
+      </div>
     </div>
   )
 }
