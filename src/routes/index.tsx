@@ -5,6 +5,7 @@ import SignUp from '../pages/SignUp'
 import Dashboard from '../pages/Dashboard'
 import PrivateRoute from './PrivateRoute'
 import Profile from '../pages/Profile'
+import Customers from '../pages/Customers'
 
 function RoutesApp() {
   return (
@@ -17,6 +18,15 @@ function RoutesApp() {
         element={
           <PrivateRoute>
             <Dashboard />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path='/customers'
+        element={
+          <PrivateRoute>
+            <Customers />
           </PrivateRoute>
         }
       />
