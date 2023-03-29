@@ -1,24 +1,25 @@
-import { ChangeEvent, useContext, useState } from 'react'
+import { ChangeEvent, FormEvent, useContext, useState } from 'react'
 import { Gear, UploadSimple } from '@phosphor-icons/react'
+import { doc, updateDoc } from 'firebase/firestore'
 
 import { AuthContext } from '../../contexts/auth'
-import { auth } from '../../services/firebaseConnection'
+import { auth, db, storage } from '../../services/firebaseConnection'
 
 import avatar from '../../assets/avatar.png'
 
 import Header from '../../components/Header'
 import Title from '../../components/Title'
+import { toast } from 'react-toastify'
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
 
-type Props = {}
-
-export default function Profile({ }: Props) {
+export default function Profile() {
 
   const { user, setUser, storageUser, logOut } = useContext(AuthContext)
 
   const [avatarUrl, setAvatarUrl] = useState(user && user.avatarUrl)
   const [imageAvatar, setImageAvatar] = useState<File | null>(null)
-  const [name, setName] = useState(user && user.name)
-  const [email, setEmail] = useState(user && user.email)
+  const [name, setName] = useState(user!.name)
+  const [email, setEmail] = useState(user!.email)
 
   function handleFile(e: ChangeEvent<HTMLInputElement>) {
     if (e.target.files) {
@@ -35,6 +36,66 @@ export default function Profile({ }: Props) {
     }
   }
 
+  async function handleUpload() {
+    if (user && imageAvatar) {
+      const currentUid = user.uid
+
+      const uploadRef = ref(storage, `images/${currentUid}/${imageAvatar.name}`)
+
+      const uploadTask = uploadBytes(uploadRef, imageAvatar)
+        .then((snapshot) => {
+
+          getDownloadURL(snapshot.ref).then(async (downloadURL) => {
+            let urlFoto = downloadURL
+
+            const docRef = doc(db, 'users', user.uid)
+            await updateDoc(docRef, {
+              avatarUrl: urlFoto,
+              name: name
+            })
+              .then(() => {
+                let data = {
+                  ...user,
+                  name: name,
+                  avatarUrl: urlFoto
+                }
+
+                setUser(data)
+                storageUser(data)
+                toast.success('Atualizado com sucesso!')
+              })
+          })
+        })
+
+    }
+  }
+
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+
+    if (imageAvatar === null && name !== '') {
+      if (user) {
+        const docRef = doc(db, 'users', user.uid)
+
+        await updateDoc(docRef, {
+          name: name,
+        })
+          .then(() => {
+            let data = {
+              ...user,
+              name: name,
+            }
+
+            setUser(data)
+            storageUser(data)
+            toast.success('Atualizado com sucesso!')
+          })
+      }
+    } else if (name !== '' && imageAvatar !== null) {
+      handleUpload()
+    }
+  }
+
   return (
     <div>
 
@@ -47,7 +108,7 @@ export default function Profile({ }: Props) {
         </Title>
 
         <div className='flex bg-light-color rounded-md p-4 items-center mb-4 shadow-md'>
-          <form className='w-full'>
+          <form className='w-full' onSubmit={handleSubmit}>
             <label className='group w-72 h-72 flex justify-center items-center flex-col cursor-pointer'>
               <span className='z-10 absolute opacity-60 transition-all group-hover:opacity-100 group-hover:scale-125 group-hover:drop-shadow-md'>
                 <UploadSimple
