@@ -1,7 +1,13 @@
+import { FormEvent, useState } from "react"
+import { addDoc, collection } from "firebase/firestore"
 import { Users } from "@phosphor-icons/react"
+import { toast } from "react-toastify"
+
+import { db } from "../../services/firebaseConnection"
+
 import Header from "../../components/Header"
 import Title from "../../components/Title"
-import { FormEvent, useState } from "react"
+
 
 type Props = {}
 
@@ -11,10 +17,28 @@ export default function Customers({ }: Props) {
   const [cnpj, setCnpj] = useState('')
   const [endereco, setEndereco] = useState('')
 
-  function handleRegister(e: FormEvent<HTMLFormElement>) {
+  async function handleRegister(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
 
-    alert('teste')
+    if (nome !== '' && cnpj !== '' && endereco !== '') {
+      await addDoc(collection(db, 'customers'), {
+        company: nome,
+        cnpj: cnpj,
+        address: endereco
+      })
+        .then(() => {
+          setNome('')
+          setCnpj('')
+          setEndereco('')
+          toast.success('Empresa registrada!')
+        })
+        .catch((error) => {
+          console.error(error);
+          toast.error('Erro ao realizar o cadastro.')
+        })
+    } else {
+      toast.error('Preencha todos os campos.')
+    }
   }
 
   return (
