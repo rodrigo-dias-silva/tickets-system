@@ -7,7 +7,7 @@ type Props = {
 
 export default function Title({ children, name }: Props) {
   return (
-    <div className="flex flex-row items-center my-4 rounded-md bg-light-color p-4 gap-3 shadow-md">
+    <div className="flex flex-row items-center my-4 rounded-md bg-light-color p-4 gap-3 shadow-md max-sm:justify-center">
       {children}
       <span className="text-2xl font-semibold">{name}</span>
     </div>
