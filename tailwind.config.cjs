@@ -14,6 +14,9 @@ module.exports = {
       },
       backgroundImage: {
         'profile': "url('/src/assets/cover.png')"
+      },
+      content: {
+        'before-table': 'attr(data-label)'
       }
     },
   },
