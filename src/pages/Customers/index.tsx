@@ -55,7 +55,7 @@ export default function Customers({ }: Props) {
             className='flex flex-col gap-3 w-full'
             onSubmit={handleRegister}
           >
-            <label> Nome da empresa</label>
+            <label className="font-semibold"> Nome da empresa</label>
             <input
               type="text"
               placeholder="Nome da empresa/cliente"
@@ -64,7 +64,7 @@ export default function Customers({ }: Props) {
               className='w-full h-10 rounded p-3 text-sm max-w-xl outline-none mb-4'
             />
 
-            <label>CNPJ</label>
+            <label className="font-semibold">CNPJ</label>
             <input
               type="text"
               placeholder="CNPJ ou CPF"
@@ -73,7 +73,7 @@ export default function Customers({ }: Props) {
               className='w-full h-10 rounded p-3 text-sm max-w-xl outline-none mb-4'
             />
 
-            <label>Endereço</label>
+            <label className="font-semibold">Endereço</label>
             <input
               type="text"
               placeholder="Endereço da empresa/cliente"
