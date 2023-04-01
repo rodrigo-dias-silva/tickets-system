@@ -1,11 +1,13 @@
 import { Route, Routes } from 'react-router-dom'
 
+import PrivateRoute from './PrivateRoute'
+
 import SignIn from '../pages/SignIn'
 import SignUp from '../pages/SignUp'
 import Dashboard from '../pages/Dashboard'
-import PrivateRoute from './PrivateRoute'
 import Profile from '../pages/Profile'
 import Customers from '../pages/Customers'
+import New from '../pages/New'
 
 function RoutesApp() {
   return (
@@ -36,6 +38,15 @@ function RoutesApp() {
         element={
           <PrivateRoute>
             <Profile />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path='/newTicket'
+        element={
+          <PrivateRoute>
+            <New />
           </PrivateRoute>
         }
       />
