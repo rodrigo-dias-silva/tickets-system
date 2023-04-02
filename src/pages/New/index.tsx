@@ -1,22 +1,81 @@
-import { ChangeEvent, useState } from "react"
+import { ChangeEvent, useContext, useEffect, useState } from "react"
 
 import { PlusCircle } from "@phosphor-icons/react"
 
 import Header from "../../components/Header"
 import Title from "../../components/Title"
 
-type Props = {}
+import { AuthContext } from "../../contexts/auth"
 
-export default function New({ }: Props) {
+import { collection, getDocs } from "firebase/firestore"
+import { db } from "../../services/firebaseConnection"
 
-  const [customers, setCustomers] = useState([])
+interface CustomersProps {
+  id: string,
+  company: string
+}
+
+const listRef = collection(db, 'customers')
+
+export default function New() {
+
+  const { user } = useContext(AuthContext)
+
+  const [customers, setCustomers] = useState<CustomersProps[]>([])
+  const [loadCustomer, setLoadCustomer] = useState(true)
+  const [customerSelected, setCustomerSelected] = useState(0)
 
   const [complemento, setComplemento] = useState('')
   const [assunto, setAssunto] = useState('Suporte')
   const [status, setStatus] = useState('Aberto')
 
+  useEffect(() => {
+    async function loadCustomers() {
+      const querySnap = await getDocs(listRef)
+        .then((snapshot) => {
+          let lista: CustomersProps[] = []
+
+          snapshot.forEach((doc) => {
+            lista.push({
+              id: doc.id,
+              company: doc.data().company
+            })
+          })
+
+          if (snapshot.docs.length === 0) {
+            console.log('Nenhuma empresa encontrada');
+            setCustomers([{ id: '1', company: 'FREELANCE' }])
+            setLoadCustomer(false)
+            return
+          }
+
+          setCustomers(lista)
+          setLoadCustomer(false)
+
+        })
+        .catch((error) => {
+          console.error('Erro ao buscar os clientes', error);
+          setLoadCustomer(false)
+          setCustomers([{ id: '1', company: 'FREELANCE' }])
+        })
+    }
+
+    loadCustomers()
+  }, [])
+
   function handleOptionChange(e: ChangeEvent<HTMLInputElement>) {
     setStatus(e.target.value)
+  }
+
+  function handleSelectChange(e: ChangeEvent<HTMLSelectElement>) {
+    setAssunto(e.target.value)
+  }
+
+  function handleCustomerChange(e: ChangeEvent<HTMLSelectElement>) {
+    const value = parseInt(e.target.value)
+    setCustomerSelected(value)
+    console.log(customers[value].company);
+
   }
 
   return (
@@ -30,13 +89,34 @@ export default function New({ }: Props) {
         <div className='flex bg-light-color rounded-md p-4 items-center mb-4 shadow-md'>
           <form className='flex flex-col gap-3 w-full'>
             <label className="font-semibold">Clientes</label>
-            <select className='w-full h-11 rounded p-3 text-sm max-w-xl outline-none mb-4'>
-              <option value="1">Mercado Silva</option>
-              <option value="2">Informática Tech</option>
-            </select>
+            {
+              loadCustomer ? (
+                <input type="text" disabled value='Carregando' />
+              ) : (
+                <select
+                  className='w-full h-11 rounded p-3 text-sm max-w-xl outline-none mb-4'
+                  value={customerSelected}
+                  onChange={handleCustomerChange}
+                >
+                  {
+                    customers.map((item, index) => {
+                      return (
+                        <option key={index} value={index}>
+                          {item.company}
+                        </option>
+                      )
+                    })
+                  }
+                </select>
+              )
+            }
 
             <label className="font-semibold">Assunto</label>
-            <select className='w-full h-11 rounded p-3 text-sm max-w-xl outline-none mb-4'>
+            <select
+              className='w-full h-11 rounded p-3 text-sm max-w-xl outline-none mb-4'
+              value={assunto}
+              onChange={handleSelectChange}
+            >
               <option value="Suporte">Suporte</option>
               <option value="Visita Tecnica">Visita Técnica</option>
               <option value="Financeiro">Financeiro</option>
