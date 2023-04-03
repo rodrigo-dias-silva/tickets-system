@@ -1,4 +1,4 @@
-import { ChangeEvent, useContext, useEffect, useState } from "react"
+import { ChangeEvent, FormEvent, useContext, useEffect, useState } from "react"
 
 import { PlusCircle } from "@phosphor-icons/react"
 
@@ -7,8 +7,9 @@ import Title from "../../components/Title"
 
 import { AuthContext } from "../../contexts/auth"
 
-import { collection, getDocs } from "firebase/firestore"
+import { addDoc, collection, getDocs } from "firebase/firestore"
 import { db } from "../../services/firebaseConnection"
+import { toast } from "react-toastify"
 
 interface CustomersProps {
   id: string,
@@ -75,7 +76,29 @@ export default function New() {
     const value = parseInt(e.target.value)
     setCustomerSelected(value)
     console.log(customers[value].company);
+  }
 
+  async function handleRegister(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+
+    await addDoc(collection(db, 'tickets'), {
+      created: new Date(),
+      client: customers[customerSelected].company,
+      clientId: customers[customerSelected].id,
+      topic: assunto,
+      complement: complemento,
+      status: status,
+      userId: user && user.uid
+    })
+      .then(() => {
+        toast.success('Chamado registrado!')
+        setComplemento('')
+        setCustomerSelected(0)
+      })
+      .catch((error) => {
+        toast.error('Opss... Erro ao registrar, tente mais tarde.')
+        console.error(error);
+      })
   }
 
   return (
@@ -87,7 +110,7 @@ export default function New() {
         </Title>
 
         <div className='flex bg-light-color rounded-md p-4 items-center mb-4 shadow-md'>
-          <form className='flex flex-col gap-3 w-full'>
+          <form className='flex flex-col gap-3 w-full' onSubmit={handleRegister}>
             <label className="font-semibold">Clientes</label>
             {
               loadCustomer ? (
