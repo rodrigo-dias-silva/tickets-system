@@ -1,15 +1,16 @@
 import { useContext, useEffect, useState } from 'react'
+import { DocumentData, QueryDocumentSnapshot, QuerySnapshot, collection, getDocs, limit, orderBy, query, startAfter } from 'firebase/firestore';
+import { Link } from 'react-router-dom';
+import { format } from 'date-fns';
+
+import { House, MagnifyingGlass, Pencil, Plus } from '@phosphor-icons/react';
+
+import { db } from '../../services/firebaseConnection';
 
 import { AuthContext } from '../../contexts/auth'
 
-import { auth, db } from '../../services/firebaseConnection';
-
 import Header from '../../components/Header';
 import Title from '../../components/Title';
-import { House, MagnifyingGlass, Pencil, Plus } from '@phosphor-icons/react';
-import { Link } from 'react-router-dom';
-import { DocumentData, QuerySnapshot, collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
-import { format } from 'date-fns';
 
 interface queryTicketProps {
   created: string,
@@ -29,7 +30,11 @@ export default function Dashboard() {
 
   const [tickets, setTickets] = useState<queryTicketProps[]>([])
   const [loading, setLoading] = useState(true)
+
   const [empty, setEmpty] = useState(false)
+
+  const [lastDocs, setLastDocs] = useState<QueryDocumentSnapshot<DocumentData>>()
+  const [loadingMore, setLoadingMore] = useState(false)
 
   useEffect(() => {
     async function loadTickets() {
@@ -66,10 +71,22 @@ export default function Dashboard() {
         })
       })
 
+      const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1]
+
       setTickets(tickets => [...tickets, ...lista])
+      setLastDocs(lastDoc)
     } else {
       setEmpty(true)
     }
+  }
+
+  async function handleSeekMore() {
+    setLoadingMore(true)
+
+    const queryList = query(listRef, orderBy('created', 'desc'), startAfter(lastDocs), limit(10))
+
+    const querySnapshot = await getDocs(queryList)
+    await updateState(querySnapshot)
   }
 
   if (loading) {
@@ -153,8 +170,8 @@ export default function Dashboard() {
                               className="p-2 text-center max-sm:block max-sm:border-b-2 max-sm:border-gray-100 max-sm:text-xs max-sm:text-right max-sm:before:content-before-table max-sm:before:float-left max-sm:before:font-semibold max-sm:before:uppercase"
                             >
                               <span
-                                className="bg-slate-400 py-1 px-2 rounded text-white text-xs"
-                                title={'Em aberto'}
+                                className={`py-1 px-2 rounded text-white text-xs ${item.status === 'Aberto' ? 'bg-green-600' : 'bg-gray-400'}`}
+                                title={item.status}
                               >
                                 {item.status}
                               </span>
@@ -183,6 +200,17 @@ export default function Dashboard() {
 
                   </tbody>
                 </table>
+
+                {loadingMore && <span className='flex py-6 text-gray-400'>Buscando mais chamados...</span>}
+                {
+                  !loadingMore && !empty &&
+                  <button
+                    onClick={handleSeekMore}
+                    className='w-36 h-10 rounded p-3 my-6 text-lg text-light-bg bg-dark-blue flex items-center justify-center font-semibold hover:opacity-80 transition-all shadow-md hover:shadow-none'
+                  >
+                    Buscar mais
+                  </button>
+                }
               </>
             )
           }
