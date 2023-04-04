@@ -1,15 +1,16 @@
 import { ChangeEvent, FormEvent, useContext, useEffect, useState } from "react"
+import { useNavigate, useParams } from "react-router-dom"
+import { toast } from "react-toastify"
 
-import { PlusCircle } from "@phosphor-icons/react"
+import { Pencil, PlusCircle } from "@phosphor-icons/react"
 
 import Header from "../../components/Header"
 import Title from "../../components/Title"
 
 import { AuthContext } from "../../contexts/auth"
 
-import { addDoc, collection, getDocs } from "firebase/firestore"
+import { DocumentData, DocumentSnapshot, addDoc, collection, doc, getDoc, getDocs, updateDoc } from "firebase/firestore"
 import { db } from "../../services/firebaseConnection"
-import { toast } from "react-toastify"
 
 interface CustomersProps {
   id: string,
@@ -21,6 +22,8 @@ const listRef = collection(db, 'customers')
 export default function New() {
 
   const { user } = useContext(AuthContext)
+  const { id } = useParams()
+  const navigate = useNavigate()
 
   const [customers, setCustomers] = useState<CustomersProps[]>([])
   const [loadCustomer, setLoadCustomer] = useState(true)
@@ -29,6 +32,7 @@ export default function New() {
   const [complemento, setComplemento] = useState('')
   const [assunto, setAssunto] = useState('Suporte')
   const [status, setStatus] = useState('Aberto')
+  const [idCustomer, setIdCustomer] = useState(false)
 
   useEffect(() => {
     async function loadCustomers() {
@@ -53,6 +57,9 @@ export default function New() {
           setCustomers(lista)
           setLoadCustomer(false)
 
+          if (id) {
+            loadId(lista, id)
+          }
         })
         .catch((error) => {
           console.error('Erro ao buscar os clientes', error);
@@ -60,9 +67,26 @@ export default function New() {
           setCustomers([{ id: '1', company: 'FREELANCE' }])
         })
     }
-
     loadCustomers()
-  }, [])
+  }, [id])
+
+  async function loadId(lista: CustomersProps[], id: string) {
+    const docRef = doc(db, 'tickets', id)
+    const snapshot = await getDoc(docRef)
+    if (snapshot.exists()) {
+      setAssunto(snapshot.data().topic)
+      setStatus(snapshot.data().status)
+      setComplemento(snapshot.data().complement)
+
+      let index = lista.findIndex(item => item.id === snapshot.data().clientId)
+      setCustomerSelected(index)
+      setIdCustomer(true)
+    }
+    else {
+      setIdCustomer(false)
+      console.error('Documento nao encontrado');
+    }
+  }
 
   function handleOptionChange(e: ChangeEvent<HTMLInputElement>) {
     setStatus(e.target.value)
@@ -80,6 +104,30 @@ export default function New() {
 
   async function handleRegister(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
+
+    if (idCustomer && id) {
+      const docRef = doc(db, 'tickets', id)
+      await updateDoc(docRef, {
+        client: customers[customerSelected].company,
+        clientId: customers[customerSelected].id,
+        topic: assunto,
+        complement: complemento,
+        status: status,
+        userId: user && user.uid
+      })
+        .then(() => {
+          toast.info('Chamado atualizado com sucesso!')
+          setCustomerSelected(0)
+          setComplemento('')
+          navigate('/dashboard')
+        })
+        .catch((error) => {
+          toast.error('Ops... Erro ao atualizar o chamado!')
+          console.error(error);
+        })
+
+      return
+    }
 
     await addDoc(collection(db, 'tickets'), {
       created: new Date(),
@@ -105,8 +153,9 @@ export default function New() {
     <div>
       <Header />
       <div className='md:ml-52 px-4 py-1'>
-        <Title name="Novo chamado">
-          <PlusCircle size={24} />
+        <Title name={id ? "Editando chamado" : "Novo chamado"}>
+          {id ? <Pencil size={24} /> : <PlusCircle size={24} />}
+
         </Title>
 
         <div className='flex bg-light-color rounded-md p-4 items-center mb-4 shadow-md'>
@@ -163,9 +212,9 @@ export default function New() {
                 id="progresso"
                 type="radio"
                 name="radio"
-                value="Progresso"
+                value="Em progresso"
                 onChange={handleOptionChange}
-                checked={status === 'Progresso'}
+                checked={status === 'Em progresso'}
                 className="peer/progresso"
               />
               <label htmlFor="progresso" className='mr-4 pl-2 text-sm hover:cursor-pointer peer-checked/progresso:text-sky-500'>Em progresso</label>
@@ -195,7 +244,7 @@ export default function New() {
               type="submit"
               className='w-36 h-10 rounded p-3 text-lg text-light-bg bg-dark-blue flex items-center justify-center font-semibold hover:opacity-80 transition-all shadow-md hover:shadow-none'
             >
-              Registrar
+              {id ? 'Atualizar' : 'Registrar'}
             </button>
           </form>
         </div>
