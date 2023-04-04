@@ -184,14 +184,15 @@ export default function Dashboard() {
                             </td>
                             <td
                               data-label="#"
-                              className="p-2 flex gap-1 justify-center max-sm:block  max-sm:text-xs max-sm:text-right max-sm:before:content-before-table max-sm:before:float-left max-sm:before:font-semibold max-sm:before:uppercase"
+                              className="p-2 flex gap-1 justify-center max-sm:block  max-sm:text-xs max-sm:text-right max-sm:before:content-before-table max-sm:before:float-left max-sm:before:font-semibold max-sm:before:uppercase
+                              "
                             >
-                              <button className="bg-blue-500 p-1 rounded inline-block max-sm:mr-1" title='Buscar'>
+                              <Link to='#' className="bg-blue-500 p-1 rounded inline-block max-sm:mr-1" title='Buscar'>
                                 <MagnifyingGlass size={16} color='#fff' />
-                              </button>
-                              <button className="bg-orange-500 p-1 rounded inline-block" title='Editar'>
+                              </Link>
+                              <Link to={`/newTicket/${item.id}`} className="bg-orange-500 p-1 rounded inline-block max-sm:" title='Editar'>
                                 <Pencil size={16} color='#fff' />
-                              </button>
+                              </Link>
                             </td>
                           </tr>
                         )
