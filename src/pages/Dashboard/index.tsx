@@ -11,6 +11,7 @@ import { AuthContext } from '../../contexts/auth'
 
 import Header from '../../components/Header';
 import Title from '../../components/Title';
+import Modal from '../../components/Modal';
 
 interface queryTicketProps {
   created: string,
@@ -35,6 +36,9 @@ export default function Dashboard() {
 
   const [lastDocs, setLastDocs] = useState<QueryDocumentSnapshot<DocumentData>>()
   const [loadingMore, setLoadingMore] = useState(false)
+
+  const [showPostModal, setShowPostModal] = useState(false)
+  const [datail, setDatail] = useState<queryTicketProps>()
 
   useEffect(() => {
     async function loadTickets() {
@@ -87,6 +91,12 @@ export default function Dashboard() {
 
     const querySnapshot = await getDocs(queryList)
     await updateState(querySnapshot)
+  }
+
+  function handleModal(item: queryTicketProps) {
+    setShowPostModal(!showPostModal)
+    setDatail(item)
+
   }
 
   if (loading) {
@@ -187,7 +197,7 @@ export default function Dashboard() {
                               className="p-2 flex gap-1 justify-center max-sm:block  max-sm:text-xs max-sm:text-right max-sm:before:content-before-table max-sm:before:float-left max-sm:before:font-semibold max-sm:before:uppercase
                               "
                             >
-                              <Link to='#' className="bg-blue-500 p-1 rounded inline-block max-sm:mr-1" title='Buscar'>
+                              <Link to='#' className="bg-blue-500 p-1 rounded inline-block max-sm:mr-1" title='Buscar' onClick={() => handleModal(item)}>
                                 <MagnifyingGlass size={16} color='#fff' />
                               </Link>
                               <Link to={`/newTicket/${item.id}`} className="bg-orange-500 p-1 rounded inline-block max-sm:" title='Editar'>
@@ -218,6 +228,12 @@ export default function Dashboard() {
 
         </>
       </div>
+      {showPostModal && (
+        <Modal
+          content={datail as queryTicketProps}
+          close={() => setShowPostModal(!showPostModal)}
+        />
+      )}
     </div>
   )
 }
